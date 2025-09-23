@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from openai import OpenAI
 import os
 
@@ -15,17 +15,19 @@ def home():
 def translate():
     sentence = request.args.get("s", "")
     if not sentence:
-        return jsonify({"error": "No sentence provided"}), 400
+        return "No sentence provided", 400
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Translate English to Turkish."},
+                {"role": "system", "content": "Translate English to Turkish. Sadece çeviriyi yaz, başka bir şey ekleme."},
                 {"role": "user", "content": sentence}
             ]
         )
-        translation = response.choices[0].message.content
-        return jsonify({"translation": translation})
+        translation = response.choices[0].message.content.strip()
+        translation = translation.replace("_", " ")  # alt çizgileri boşluğa çevir
+
+        return translation  # JSON değil, düz metin
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return f"Error: {str(e)}", 500
