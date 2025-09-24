@@ -21,13 +21,22 @@ def translate():
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Translate English to Turkish. Sadece çeviriyi yaz, başka bir şey ekleme."},
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a translation assistant. "
+                        "Translate the English sentence into natural Turkish. "
+                        "If the sentence contains idioms, cultural references, or figurative speech, "
+                        "explain their meaning in Turkish after the translation. "
+                        "Output format:\n\n"
+                        "Çeviri: <Türkçe çeviri>\n"
+                        "Açıklama: <Kısa açıklama (gerekirse)>"
+                    )
+                },
                 {"role": "user", "content": sentence}
             ]
         )
-        translation = response.choices[0].message.content.strip()
-        translation = translation.replace("_", " ")  # alt çizgileri boşluğa çevir
-
-        return translation  # JSON değil, düz metin
+        result = response.choices[0].message.content.strip()
+        return result
     except Exception as e:
         return f"Error: {str(e)}", 500
