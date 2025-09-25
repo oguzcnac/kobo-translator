@@ -1,15 +1,15 @@
 from flask import Flask, request, render_template_string
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.orm import sessionmaker, declarative_base
-import openai
+from openai import OpenAI
 import os
 
 app = Flask(__name__)
 
-# 🔹 OpenAI ayarı
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+# 🔹 OpenAI client (1.0+ uyumlu)
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# 🔹 Database ayarı (Render'ın verdiği URL environment variable olarak eklenecek)
+# 🔹 Database ayarı
 DATABASE_URL = os.environ.get("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
@@ -27,14 +27,14 @@ Base.metadata.create_all(engine)
 
 # 🔹 Çeviri yapan fonksiyon
 def do_translation(sentence):
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "Sen profesyonel bir çevirmen ve dil öğretmenisin."},
             {"role": "user", "content": f"Bu cümleyi Türkçeye çevir ve gerekiyorsa deyimleri veya özel anlamları açıklayarak yaz:\n\n{sentence}"}
         ]
     )
-    return response.choices[0].message["content"]
+    return response.choices[0].message.content
 
 # 🔹 books.txt’den kitapları oku
 with open("books.txt", "r", encoding="utf-8") as f:
@@ -92,3 +92,6 @@ def save_word():
 @app.route("/")
 def index():
     return "Kobo Translator + Word Collector çalışıyor!"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
