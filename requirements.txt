@@ -1,4 +1,5 @@
 flask
+gunicorn
+openai
 sqlalchemy
 psycopg2-binary
-openai
