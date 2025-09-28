@@ -33,7 +33,7 @@ def do_translation(sentence):
         model="gpt-4o-mini",
         messages=[
             {"role": "system", "content": "Sen profesyonel bir çevirmen ve dil öğretmenisin."},
-            {"role": "user", "content": f"Bu cümleyi Türkçeye çevir ve gerekiyorsa deyimleri veya özel anlamları açıklayarak yaz:\n\n{sentence}"}
+            {"role": "user", "content": f"Bu cümleyi Türkçeye çevir ve gerekiyorsa deyimleri veya özel anlamları açıklayarak yaz. özel anlam yoksa uydurmana gerek yok, çok abartma yani:\n\n{sentence}"}
         ]
     )
     return response.choices[0].message.content
