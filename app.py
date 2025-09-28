@@ -1,8 +1,10 @@
-from flask import Flask, request, render_template_string
+from flask import Flask, request, render_template_string, send_file
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from openai import OpenAI
 import os
+import csv
+import io
 
 app = Flask(__name__)
 
@@ -70,6 +72,8 @@ def translate():
       <input type="hidden" name="sentence" value="{{ sentence }}">
       <button type="submit">Kaydet</button>
     </form>
+    <br>
+    <a href="/export"><button>📥 CSV olarak indir</button></a>
     """
     return render_template_string(form_template, translation=translation, sentence=sentence, words=words, books=books)
 
@@ -88,6 +92,27 @@ def save_word():
     session.close()
 
     return "✅ Kelime kaydedildi!"
+
+# 🔹 CSV export endpoint
+@app.route("/export")
+def export_words():
+    session = Session()
+    words = session.query(Word).all()
+    session.close()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id", "book", "word", "sentence", "translation"])
+    for w in words:
+        writer.writerow([w.id, w.book, w.word, w.sentence, w.translation])
+    output.seek(0)
+
+    return send_file(
+        io.BytesIO(output.getvalue().encode("utf-8")),
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name="words_export.csv"
+    )
 
 @app.route("/")
 def index():
